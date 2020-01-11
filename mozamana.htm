@@ -1,0 +1,172 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Tajawal&display=swap" rel="stylesheet">
+
+    <script type="text/javascript">
+
+    var eventStart;
+    var eventEnd;
+
+
+    google.charts.load("current", {packages:["timeline"]});
+    google.charts.setOnLoadCallback(drawChart);
+    google.charts.load('current', {'packages':['table']});
+ 
+
+    function drawChart() {
+
+        var container = document.getElementById('_container');
+        var chart = new google.visualization.Timeline(container);
+        var dataTable = new google.visualization.DataTable();
+
+        
+
+        dataTable.addColumn({ type: 'string', id: 'Role' });
+        dataTable.addColumn({ type: 'string', id: 'Name' });
+        dataTable.addColumn({ type: 'date', id: 'Start' });
+        dataTable.addColumn({ type: 'date', id: 'End' });
+        
+        dataTable.addRows([
+       
+        [ 'حدث', 'الحرب العالمية الأولى', new Date(1914,7,28), new Date (1918,11,11)], 
+        [ 'حدث', 'الحرب العالمية الثانية', new Date(1938,9,1), new Date (1945,9,2)],
+        [ 'اديب', 'طه حسين', new Date(1889, 11, 15), new Date(1973, 10, 28)],
+        [ 'اديب', 'معروف الرصافي', new Date(1875, 6, 30), new Date(1945, 3, 16)],
+        [ 'اديب', 'نجيب محفوظ', new Date(1911, 12, 11), new Date(2006, 8, 30)],
+        [ 'اديب','حافظ ابراهيم', new Date(1872, 2, 24), new Date(1932, 6, 21)],
+        [ 'اديب', 'مصطفى الرافعي', new Date(1880, 1, 1), new Date(1937, 5, 10)],
+        [ 'اديب', 'محمد كرد علي', new Date(1876, 6, 30), new Date(1953, 6, 30)],
+        [ 'اديب', 'محمد عبده', new Date(1849, 6, 30), new Date(1905, 7, 11)],
+        [ 'اديب', 'مصطفى المنفلوطي', new Date(1876, 12, 30), new Date(1924, 7, 25)],
+        [ 'اديب', 'محمود البارودي', new Date(1839, 10, 6), new Date(1904, 12, 12)]]);
+
+        
+       
+
+
+        var options = {
+        colors: ['#71a712'],
+        timeline: { rowLabelStyle: {fontName: 'Tajawal', fontSize: 14, color: '#111111' },
+                     barLabelStyle: { fontName: 'Tajawal', fontSize: 14 },
+                     groupByRowLabel: false }
+          
+        };
+
+        google.visualization.events.addListener(chart, 'select', function(obj) {
+            
+            var selection = chart.getSelection();
+            eventStart = (dataTable.getValue(selection[0].row, 2));
+            eventEnd = (dataTable.getValue(selection[0].row, 3));
+
+            showTable(dataTable);
+
+        });
+
+        chart.draw(dataTable, options);
+
+
+
+    }
+    </script>
+
+    <script>
+    function showTable(dataTable) {
+        
+ 
+        var data = prepareData(dataTable);
+        var table = new google.visualization.Table(document.getElementById('table_div'));
+        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+
+       
+    }
+
+    function timeStampToYears(diff) {
+
+
+        var years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+        return years;
+    }
+    function prepareData(dataTable) {
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('string','الإسم');
+        data.addColumn('string', 'المدة - العمر');
+        data.addColumn('string', 'بداية عمر المزامنة');
+        data.addColumn('string', 'نهاية عمر المزامنة');
+
+        var noOfRows = dataTable.getNumberOfRows()
+        data.addRows(noOfRows);
+        
+        console.log(eventStart);
+        console.log(eventEnd);
+
+        for (i=0; i< noOfRows ; i++) {
+
+            
+           // calculate age
+           var diff = dataTable.getValue(i,3) - dataTable.getValue(i,2);
+           age = timeStampToYears(diff);
+
+           data.setValue(i, 0, dataTable.getValue(i,1));
+           data.setValue(i, 1, age.toString());
+          
+           // calculate 
+  
+           var startAge = eventStart - dataTable.getValue(i,2);
+
+           if (startAge == 0) {
+
+            data.setValue(i,2,'-'); 
+
+           } else if ( eventStart > dataTable.getValue(i,3)) {
+
+            data.setValue(i,2,'لم يدرك الحدث');
+
+           } else {
+
+            data.setValue(i,2,timeStampToYears(startAge).toString());
+
+           }
+           
+
+           var endAge = eventEnd - dataTable.getValue(i,2);
+           var endAge1 = eventEnd - dataTable.getValue(i,3);
+
+           if (endAge1 == 0) {
+
+               data.setValue(i,3,'-');
+
+           } else if ( eventEnd > dataTable.getValue(i,3)) {
+
+            data.setValue(i,3,"لم يدرك الحدث");
+
+           } else {
+
+            data.setValue(i,3,timeStampToYears(endAge).toString());
+
+           }
+           
+          
+        }
+
+
+
+        return data;
+    }
+   
+
+    </script>
+
+   
+
+
+  </head>
+  <body>
+    <div id="_container" style="height: 100%;"></div>
+    <div id="timeline"></div>
+    <div id="table_div"></div>
+
+  </body>
+</html>
